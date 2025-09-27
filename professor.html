@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário com Adição de Evento</title>
+    <style>
+        /* Estilos CSS */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Estilos do Calendário */
+        .calendar {
+            width: 700px; /* Largura ajustada para o layout */
+            background-color: #fff;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .weekdays, .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .weekdays > div {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 5px;
+            text-align: center;
+            font-weight: bold;
+            border-right: 1px solid #5a6268;
+            border-bottom: 1px solid #5a6268;
+        }
+
+        .weekdays > div:last-child {
+            border-right: none;
+        }
+
+        .day-box {
+            min-height: 80px; /* Altura para as células */
+            border: 1px solid #e0e0e0;
+            cursor: pointer;
+            padding: 5px;
+            text-align: left;
+            transition: background-color 0.1s;
+            position: relative; /* Para posicionar o número do dia */
+        }
+
+        .day-box:hover {
+            background-color: #f0f0f0;
+        }
+
+        .day-box.highlight {
+            border: 3px solid #66bb6a; /* Destaque verde para o dia selecionado */
+        }
+
+        .day-number {
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Estilos para dias fora do mês */
+        .prev-month, .next-month {
+            background-color: #f9f9f9;
+            color: #aaa;
+            cursor: default;
+        }
+
+        .prev-month:hover, .next-month:hover {
+            background-color: #f9f9f9;
+        }
+
+
+        /* Estilos da Janela de Novo Evento */
+        .new-event-form {
+            width: 250px;
+            background-color: #66bb6a; /* Verde da imagem */
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            transform: scaleX(0); /* Inicialmente escondido */
+            transform-origin: left;
+            transition: transform 0.3s ease-out;
+            opacity: 0;
+            pointer-events: none; /* Desabilita interações quando invisível */
+        }
+
+        .new-event-form.visible {
+            transform: scaleX(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .new-event-form::before {
+            content: '';
+            position: absolute;
+            left: -15px; /* Posição para a ponta */
+            top: 20px;
+            border-width: 10px;
+            border-style: solid;
+            border-color: transparent #66bb6a transparent transparent;
+        }
+
+        .form-header {
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-fields {
+            background-color: white;
+            padding: 20px 15px;
+            border-radius: 3px;
+        }
+
+        .field-group {
+            margin-bottom: 15px;
+        }
+
+        .field-group label {
+            display: block;
+            font-size: 0.9em;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .field-group input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .add-event-button {
+            width: 100%;
+            background-color: #4CAF50; /* Verde mais escuro */
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .add-event-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="calendar">
+            <div class="weekdays">
+                <div>Domingo</div>
+                <div>Segunda-Feira</div>
+                <div>Terça-Feira</div>
+                <div>Quarta-Feira</div>
+                <div>Quinta-Feira</div>
+                <div>Sexta-Feira</div>
+                <div>Sábado</div>
+            </div>
+            <div class="days" id="calendar-days">
+                </div>
+        </div>
+
+        <div class="new-event-form" id="newEventForm">
+            <div class="form-header">
+                NOVO EVENTO
+            </div>
+            <div class="form-fields">
+                <div class="field-group">
+                    <label for="evento-input">EVENTO:</label>
+                    <input type="text" id="evento-input" placeholder="">
+                </div>
+                <div class="field-group">
+                    <label for="local-input">LOCAL:</label>
+                    <input type="text" id="local-input" placeholder="">
+                </div>
+                <div class="field-group">
+                    <label for="horario-input">HORÁRIO:</label>
+                    <input type="text" id="horario-input" placeholder="">
+                </div>
+                <button class="add-event-button">ADICIONAR EVENTO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript para a funcionalidade
+
+        const daysContainer = document.getElementById('calendar-days');
+        const newEventForm = document.getElementById('newEventForm');
+        let highlightedDay = null; // Variável para rastrear o dia atualmente destacado
+
+        // Função para criar o calendário
+        function createCalendar() {
+            // Arrays de dias do mês e dias da semana para o exemplo
+            // Representa um mês genérico (baseado na imagem)
+            const daysInMonth = [
+                31, // Último dia do mês anterior
+                1, 2, 3, 4, 5, 6,
+                7, 8, 9, 10, 11, 12, 13,
+                14, 15, 16, 17, 18, 19, 20,
+                21, 22, 23, 24, 25, 26, 27,
+                28, 29, 30, // Dias do mês
+                1, 2, 3, 4 // Próximo mês
+            ];
+
+            const isCurrentMonth = [
+                false, // 31
+                true, true, true, true, true, true,
+                true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true,
+                true, true, true, true, true, true, true,
+                true, true, true,
+                false, false, false, false // Próximo mês
+            ];
+
+            daysContainer.innerHTML = ''; // Limpa o container
+
+            daysInMonth.forEach((dayNumber, index) => {
+                const dayBox = document.createElement('div');
+                dayBox.classList.add('day-box');
+                
+                const dayIsCurrentMonth = isCurrentMonth[index];
+                
+                if (!dayIsCurrentMonth) {
+                    dayBox.classList.add(index < 1 ? 'prev-month' : 'next-month');
+                } else {
+                    // Adiciona o data attribute para identificar o dia do mês
+                    dayBox.dataset.day = dayNumber; 
+                }
+
+                dayBox.innerHTML = `<span class="day-number">${dayNumber}</span>`;
+
+                // Aplica o destaque inicial no dia 18 (como na imagem)
+                if (dayNumber === 18 && dayIsCurrentMonth) {
+                    dayBox.classList.add('highlight');
+                    highlightedDay = dayBox;
+                }
+                
+                // Adiciona o event listener APENAS para os dias do mês atual
+                if (dayIsCurrentMonth) {
+                    dayBox.addEventListener('click', () => handleDayClick(dayBox));
+                }
+
+                daysContainer.appendChild(dayBox);
+            });
+        }
+
+        // Função para manipular o clique no dia
+        function handleDayClick(clickedDayBox) {
+            // 1. Remove o destaque do dia anterior (se houver)
+            if (highlightedDay && highlightedDay !== clickedDayBox) {
+                highlightedDay.classList.remove('highlight');
+            }
+            
+            // 2. Adiciona o destaque ao dia clicado
+            clickedDayBox.classList.add('highlight');
+            highlightedDay = clickedDayBox;
+
+            // 3. Torna a janela de Novo Evento visível
+            newEventForm.classList.add('visible');
+            
+            // Opcional: Você pode querer fazer algo com o dia selecionado, como:
+            // const selectedDay = clickedDayBox.dataset.day;
+            // console.log('Dia selecionado:', selectedDay);
+        }
+        
+        // Inicializa o calendário ao carregar a página
+        createCalendar();
+    </script>
+</body>
+</html>
