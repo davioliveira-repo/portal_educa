@@ -1,0 +1,90 @@
+@charset "UTF-8";
+
+@font-face {
+    font-family: 'Gliker';
+    src: url(fontes/gliker-regular.ttf) format(truetype);
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff;
+}
+header h1{
+    font-family: Gliker;
+    letter-spacing: 3px;
+    color: #7fd856;
+    text-align: center;
+    font-size: 75px;
+}
+/* Faz duas colunas: texto à esquerda e botões à direita */
+.container {
+    display: flex;
+    justify-content: space-between;  /* separa os blocos */
+    align-items: flex-start;
+    width: 90%;
+    margin: 0 auto;
+    gap: 40px;
+}
+
+.texto {
+    flex: 1; /* ocupa a esquerda */
+    background: #6edc6e;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.233);
+}
+.texto{
+    font-family: Gliker;
+    color: white;
+    letter-spacing: 2px;
+    text-align: justify;
+    font-size: 25px;
+}
+
+/* Área dos botões */
+.botoes {
+    flex: 1; /* ocupa a direita */
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* espaço entre os botões */
+    align-items: center;
+    justify-content: flex-start;
+}
+
+#botao1, #botao2 {
+    background: #6edc6e;
+    padding: 15px 25px;
+    border-radius: 25px;
+    color: white;
+    font-size: 30px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 80%;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s ease;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.233);
+    
+}
+a{
+    text-decoration: none;
+}
+
+#botao1:hover, #botao2:hover {
+    background: #3b9e40;
+}
+
+#botao1 img,
+#botao2 img {
+    width: 40px;
+    height: 40px;
+}
+.home{
+    width: 78px;
+    float: right;
+    margin-right: 10px;
+}
